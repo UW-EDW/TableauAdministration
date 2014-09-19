@@ -1,0 +1,87 @@
+-- Function: sp_audit_permissions()
+
+-- DROP FUNCTION sp_audit_permissions();
+
+CREATE OR REPLACE FUNCTION sp_audit_permissions()
+  RETURNS void AS
+$BODY$DROP TABLE IF EXISTS public.permission_audit;
+
+--Collect workbook permission entries that are not set at project level
+SELECT * INTO public.permission_audit FROM(
+(select w.id as workbook, p.id as project, n.grantee_id, n.grantee_type, n.capability_id, n.permission, 'W not P' as direction
+--INTO UNLOGGED public.permission_audit
+from next_gen_permissions as n
+inner join workbooks as w
+on 
+(
+w.id = n.authorizable_id
+and n.authorizable_type = 'Workbook'
+)
+or 
+(
+w.project_id = n.authorizable_id
+and n.authorizable_type = 'Project'
+)
+join projects p on p.id = w.project_id
+where n.authorizable_type = 'Workbook'
+and n.authorizable_id = w.id
+except
+select w.id, p.id, n.grantee_id, n.grantee_type, n.capability_id, n.permission, 'W not P'
+from next_gen_permissions as n
+inner join workbooks as w
+on 
+(
+w.id = n.authorizable_id
+and n.authorizable_type = 'Workbook'
+)
+or 
+(
+w.project_id = n.authorizable_id
+and n.authorizable_type = 'Project'
+)
+join projects p on p.id = w.project_id
+where authorizable_type = 'Project'
+and n.authorizable_id = w.project_id)
+UNION ALL
+--SELECT "SP_permission_audit"();
+
+--Collect project permissions that are not pushed down to workbook level, append to public.permission_audit table
+--INSERT INTO public.permission_audit (workbook, project, grantee_id, grantee_type, capability_id, permission, direction)
+(SELECT w.id, p.id, n.grantee_id, n.grantee_type, n.capability_id, n.permission, 'P not W'
+from next_gen_permissions as n
+inner join workbooks as w
+on 
+(
+w.id = n.authorizable_id
+and n.authorizable_type = 'Workbook'
+)
+or 
+(
+w.project_id = n.authorizable_id
+and n.authorizable_type = 'Project'
+)
+join projects p on p.id = w.project_id
+where n.authorizable_type = 'Project'
+and n.authorizable_id = w.project_id
+except
+select w.id, p.id, n.grantee_id, n.grantee_type, n.capability_id, n.permission, 'P not W'
+from next_gen_permissions as n
+inner join workbooks as w
+on 
+(
+w.id = n.authorizable_id
+and n.authorizable_type = 'Workbook'
+)
+or 
+(
+w.project_id = n.authorizable_id
+and n.authorizable_type = 'Project'
+)
+join projects p on p.id = w.project_id
+where authorizable_type = 'Workbook'
+and n.authorizable_id = w.id)) DATA;
+$BODY$
+  LANGUAGE sql VOLATILE
+  COST 100;
+ALTER FUNCTION sp_audit_permissions()
+  OWNER TO boyletj;
