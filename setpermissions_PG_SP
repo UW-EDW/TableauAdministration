@@ -1,0 +1,89 @@
+-- Function: setpermissions(character varying)
+
+-- DROP FUNCTION setpermissions(character varying);
+
+CREATE OR REPLACE FUNCTION setpermissions(projectname character varying)
+  RETURNS void AS
+$BODY$
+      DECLARE project_ID integer;
+       editor_group_ID integer;
+       publisher_group_ID integer;
+       viewer_group_ID integer;
+	BEGIN
+	
+	SELECT id INTO project_ID FROM projects WHERE projects.name = projectName;
+
+	SELECT id INTO editor_group_ID FROM groups WHERE groups.name = projectName || ' Editor Group';
+
+	SELECT id INTO publisher_group_ID FROM groups WHERE groups.name = projectName || ' Publisher Group';
+
+	SELECT id INTO viewer_group_ID FROM groups WHERE groups.name = projectName || ' Viewer Group';
+	--editor
+	insert into next_gen_permissions (authorizable_type, authorizable_id, grantee_id, grantee_type, capability_id, permission) VALUES 
+	('Project', @project_ID, @editor_group_ID, 'Group',1,1), --view
+	('Project', @project_ID, @editor_group_ID, 'Group',2,2), --write / web save
+	('Project', @project_ID, @editor_group_ID, 'Group',13,2), --Delete
+	('Project', @project_ID, @editor_group_ID, 'Group',17,1), --Download/Web Save As
+	('Project', @project_ID, @editor_group_ID, 'Group',18,2), --Move
+	('Project', @project_ID, @editor_group_ID, 'Group',14,2), --Set Permissions
+	('Project', @project_ID, @editor_group_ID, 'Group',3,1), --Filter
+	('Project', @project_ID, @editor_group_ID, 'Group',5,1), --Filter exclude
+	('Project', @project_ID, @editor_group_ID, 'Group',6,1), --Filter keep only
+	('Project', @project_ID, @editor_group_ID, 'Group',9,1), --Add Comment
+	('Project', @project_ID, @editor_group_ID, 'Group',10,1), --View Comments
+	('Project', @project_ID, @editor_group_ID, 'Group',8,1), --View Summary Data
+	('Project', @project_ID, @editor_group_ID, 'Group',4,1), --View Underlying Data
+	('Project', @project_ID, @editor_group_ID, 'Group',7,1), --Export Image
+	('Project', @project_ID, @editor_group_ID, 'Group',21,1), --Share Customized
+	('Project', @project_ID, @editor_group_ID, 'Group',33,1), --Web Edit
+	('Project', @project_ID, @editor_group_ID, 'Group',32,1), --Connect Data Source
+	('Project', @project_ID, @editor_group_ID, 'Group',19,2); --Project Leader
+
+	--Publisher
+	insert into next_gen_permissions (authorizable_type, authorizable_id, grantee_id, grantee_type, capability_id, permission) VALUES 
+	('Project', @project_ID, @publisher_group_ID, 'Group',1,1), --view
+	('Project', @project_ID, @publisher_group_ID, 'Group',2,1), --write / web save
+	('Project', @project_ID, @publisher_group_ID, 'Group',13,1), --Delete
+	('Project', @project_ID, @publisher_group_ID, 'Group',17,1), --Download/Web Save As
+	('Project', @project_ID, @publisher_group_ID, 'Group',18,1), --Move
+	('Project', @project_ID, @publisher_group_ID, 'Group',14,2), --Set Permissions
+	('Project', @project_ID, @publisher_group_ID, 'Group',3,1), --Filter
+	('Project', @project_ID, @publisher_group_ID, 'Group',5,1), --Filter exclude
+	('Project', @project_ID, @publisher_group_ID, 'Group',6,1), --Filter keep only
+	('Project', @project_ID, @publisher_group_ID, 'Group',9,1), --Add Comment
+	('Project', @project_ID, @publisher_group_ID, 'Group',10,1), --View Comments
+	('Project', @project_ID, @publisher_group_ID, 'Group',8,1), --View Summary Data
+	('Project', @project_ID, @publisher_group_ID, 'Group',4,1), --View Underlying Data
+	('Project', @project_ID, @publisher_group_ID, 'Group',7,1), --Export Image
+	('Project', @project_ID, @publisher_group_ID, 'Group',21,1), --Share Customized
+	('Project', @project_ID, @publisher_group_ID, 'Group',33,1), --Web Edit
+	('Project', @project_ID, @publisher_group_ID, 'Group',32,1), --Connect Data Source
+	('Project', @project_ID, @publisher_group_ID, 'Group',19,2); --Project Leader
+	
+
+	--Viewer
+	insert into next_gen_permissions (authorizable_type, authorizable_id, grantee_id, grantee_type, capability_id, permission) VALUES 
+	('Project', @project_ID, @viewer_group_ID, 'Group',1,1), --view
+	('Project', @project_ID, @viewer_group_ID, 'Group',2,2), --write / web save
+	('Project', @project_ID, @viewer_group_ID, 'Group',13,2), --Delete
+	('Project', @project_ID, @viewer_group_ID, 'Group',17,2), --Download/Web Save As
+	('Project', @project_ID, @viewer_group_ID, 'Group',18,2), --Move
+	('Project', @project_ID, @viewer_group_ID, 'Group',14,2), --Set Permissions
+	('Project', @project_ID, @viewer_group_ID, 'Group',3,1), --Filter
+	('Project', @project_ID, @viewer_group_ID, 'Group',5,1), --Filter exclude
+	('Project', @project_ID, @viewer_group_ID, 'Group',6,1), --Filter keep only
+	('Project', @project_ID, @viewer_group_ID, 'Group',9,1), --Add Comment
+	('Project', @project_ID, @viewer_group_ID, 'Group',10,1), --View Comments
+	('Project', @project_ID, @viewer_group_ID, 'Group',8,1), --View Summary Data
+	('Project', @project_ID, @viewer_group_ID, 'Group',4,1), --View Underlying Data
+	('Project', @project_ID, @viewer_group_ID, 'Group',7,1), --Export Image
+	('Project', @project_ID, @viewer_group_ID, 'Group',21,1), --Share Customized
+	('Project', @project_ID, @viewer_group_ID, 'Group',33,2), --Web Edit
+	('Project', @project_ID, @viewer_group_ID, 'Group',32,2), --Connect Data Source
+	('Project', @project_ID, @viewer_group_ID, 'Group',19,2); --Project Leader
+     END;
+  $BODY$
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION setpermissions(character varying)
+  OWNER TO tblwgadmin;
